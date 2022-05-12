@@ -30,7 +30,7 @@ command=dig
 if [ -n "$master" ]
 then
     # https://datatracker.ietf.org/doc/html/rfc4027#section-3
-    printf '$ORIGIN %s\n' $name > "${name}.zone"
+    printf '$ORIGIN %s\n' "$name" > "${name}.zone"
 fi
 
 for type in $types
