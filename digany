@@ -23,8 +23,89 @@ fi
 
 server=$(dig +nocmd "$name" NS +noall +answer | head -n 1 | awk '{ print $5 }')
 
-# https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.2
-types="A NS MD MF CNAME SOA MB MG MR NULL WKS PTR HINFO MINFO MX TXT"
+# https://gitlab.isc.org/isc-projects/bind9/-/blob/main/bin/tests/system/rrchecker/typelist.good
+typelist='A
+NS
+MD
+MF
+CNAME
+SOA
+MB
+MG
+MR
+NULL
+WKS
+PTR
+HINFO
+MINFO
+MX
+TXT
+RP
+AFSDB
+X25
+ISDN
+RT
+NSAP
+NSAP-PTR
+SIG
+KEY
+PX
+GPOS
+AAAA
+LOC
+NXT
+EID
+NIMLOC
+SRV
+ATMA
+NAPTR
+KX
+CERT
+A6
+DNAME
+SINK
+APL
+DS
+SSHFP
+IPSECKEY
+RRSIG
+NSEC
+DNSKEY
+DHCID
+NSEC3
+NSEC3PARAM
+TLSA
+SMIMEA
+HIP
+NINFO
+RKEY
+TALINK
+CDS
+CDNSKEY
+OPENPGPKEY
+CSYNC
+ZONEMD
+SVCB
+HTTPS
+SPF
+UINFO
+UID
+GID
+UNSPEC
+NID
+L32
+L64
+LP
+EUI48
+EUI64
+URI
+CAA
+AVC
+DOA
+AMTRELAY
+TA
+DLV
+'
 DIG=dig
 
 if [ -n "$master" ]
@@ -33,7 +114,7 @@ then
     printf '$ORIGIN %s\n' "$name" > "${name}.zone"
 fi
 
-for type in $types
+for type in $typelist
 do
     DIGOPTS="+nocmd @${server} $name $type +noall +answer"
 
