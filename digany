@@ -1,8 +1,18 @@
 #!/bin/sh
 
 usage() {
-    printf "usage: %s name\n" $0
+    printf "usage: %s [-m] name\n" $0
 }
+
+while getopts m name
+do
+    case $name in
+    m)    master=1;;
+    ?)    usage
+          exit 2;;
+    esac
+done
+shift $(($OPTIND - 1))
 
 name=$1
 if [ -z "$name" ]
@@ -15,7 +25,22 @@ server=$(dig +nocmd "$name" NS +noall +answer | head -n 1 | awk '{ print $5 }')
 
 # https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.2
 types="A NS MD MF CNAME SOA MB MG MR NULL WKS PTR HINFO MINFO MX TXT"
+command=dig
+
+if [ -n "$master" ]
+then
+    # https://datatracker.ietf.org/doc/html/rfc4027#section-3
+    printf '$ORIGIN %s\n' $name > "${name}.zone"
+fi
+
 for type in $types
 do
-    dig +nocmd "@${server}" "$name" "$type" +noall +answer
+    options="+nocmd @${server} $name $type +noall +answer"
+
+    if [ -n "$master" ]
+    then
+        $command $options >> "${name}.zone"
+    else
+        $command $options
+    fi
 done
