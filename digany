@@ -1,0 +1,21 @@
+#!/bin/sh
+
+usage() {
+    printf "usage: %s name\n" $0
+}
+
+name=$1
+if [ -z "$name" ]
+then
+    usage
+    exit 2
+fi
+
+server=$(dig +nocmd "$name" NS +noall +answer | head -n 1 | awk '{ print $5 }')
+
+# https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.2
+types="A NS MD MF CNAME SOA MB MG MR NULL WKS PTR HINFO MINFO MX TXT"
+for type in $types
+do
+    dig +nocmd "@${server}" "$name" "$type" +noall +answer
+done
