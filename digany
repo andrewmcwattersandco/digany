@@ -25,7 +25,7 @@ server=$(dig +nocmd "$name" NS +noall +answer | head -n 1 | awk '{ print $5 }')
 
 # https://datatracker.ietf.org/doc/html/rfc1035#section-3.2.2
 types="A NS MD MF CNAME SOA MB MG MR NULL WKS PTR HINFO MINFO MX TXT"
-command=dig
+DIG=dig
 
 if [ -n "$master" ]
 then
@@ -35,12 +35,12 @@ fi
 
 for type in $types
 do
-    options="+nocmd @${server} $name $type +noall +answer"
+    DIGOPTS="+nocmd @${server} $name $type +noall +answer"
 
     if [ -n "$master" ]
     then
-        $command $options >> "${name}.zone"
+        $DIG $DIGOPTS >> "${name}.zone"
     else
-        $command $options
+        $DIG $DIGOPTS
     fi
 done
