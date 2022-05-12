@@ -21,7 +21,10 @@ then
     exit 2
 fi
 
-server=$(dig +nocmd "$name" NS +noall +answer | head -n 1 | awk '{ print $5 }')
+DIG=dig
+DIGOPTS="+nocmd $name NS +noall +answer"
+
+server=$($DIG $DIGOPTS | head -n 1 | awk '{ print $5 }')
 
 # https://gitlab.isc.org/isc-projects/bind9/-/blob/main/bin/tests/system/rrchecker/typelist.good
 typelist='A
@@ -95,7 +98,6 @@ AVC
 TA
 DLV
 '
-DIG=dig
 
 if [ -n "$master" ]
 then
