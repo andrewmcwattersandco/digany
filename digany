@@ -26,78 +26,7 @@ DIGOPTS="+nocmd $name NS +noall +answer"
 
 server=$($DIG $DIGOPTS | head -n 1 | awk '{ print $5 }')
 
-# https://gitlab.isc.org/isc-projects/bind9/-/blob/main/bin/tests/system/rrchecker/typelist.good
-typelist='A
-NS
-MD
-MF
-CNAME
-SOA
-MB
-MG
-MR
-NULL
-WKS
-PTR
-HINFO
-MINFO
-MX
-TXT
-RP
-AFSDB
-X25
-ISDN
-RT
-NSAP
-NSAP-PTR
-SIG
-KEY
-PX
-GPOS
-AAAA
-LOC
-NXT
-SRV
-NAPTR
-KX
-CERT
-A6
-DNAME
-SINK
-APL
-DS
-SSHFP
-IPSECKEY
-RRSIG
-NSEC
-DNSKEY
-DHCID
-NSEC3
-NSEC3PARAM
-TLSA
-SMIMEA
-HIP
-NINFO
-RKEY
-TALINK
-CDS
-CDNSKEY
-OPENPGPKEY
-CSYNC
-SPF
-UNSPEC
-NID
-L32
-L64
-LP
-EUI48
-EUI64
-URI
-CAA
-AVC
-TA
-DLV
-'
+typelist=$(nsupdate -T | awk '! /EID|NIMLOC|ATMA|UINFO|UID|GID/')
 
 if [ -n "$master" ]
 then
