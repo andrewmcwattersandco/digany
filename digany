@@ -1,18 +1,19 @@
 #!/bin/sh
 
 usage() {
-    printf "usage: %s [-m] name\n" $0
+    printf "usage: %s [-m] name\n" "$0" >&2
+    printf "  -m    create .zone file for backup\n" >&2
 }
 
-while getopts m name
+while getopts m opt
 do
-    case $name in
+    case $opt in
     m)    master=1;;
     ?)    usage
           exit 2;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 name=$1
 if [ -z "$name" ]
@@ -22,26 +23,38 @@ then
 fi
 
 DIG=dig
-DIGOPTS="+nocmd $name NS +noall +answer"
+DIGOPTS="+nocmd +noall +answer"
 
-server=$($DIG $DIGOPTS | head -n 1 | awk '{ print $5 }')
+server=$(
+    $DIG $DIGOPTS "$name" NS \
+    | awk 'NR==1 { print $5 }'
+)
+rc=$?
+[ $rc -ne 0 ] && exit $rc
+
+[ -z "$server" ] && {
+    printf "%s: no NS records\n" "$name" >&2
+    exit 1
+}
+
+server=${server%.}.
 
 typelist=$(nsupdate -T | awk '! /EID|NIMLOC|ATMA|UINFO|UID|GID/')
 
 if [ -n "$master" ]
 then
     # https://datatracker.ietf.org/doc/html/rfc4027#section-3
-    printf '$ORIGIN %s\n' "$name" > "${name}.zone"
+    ZONEFILE="${name}.zone"
+    printf '$ORIGIN %s.\n' "$name" > "$ZONEFILE"
+    printf '$TTL 3600\n' >> "$ZONEFILE"
 fi
 
 for type in $typelist
 do
-    DIGOPTS="+nocmd @${server} $name $type +noall +answer"
-
     if [ -n "$master" ]
     then
-        $DIG $DIGOPTS >> "${name}.zone"
+        $DIG $DIGOPTS @"$server" "$name" "$type" >> "$ZONEFILE"
     else
-        $DIG $DIGOPTS
+        $DIG $DIGOPTS @"$server" "$name" "$type"
     fi
 done
