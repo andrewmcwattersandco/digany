@@ -39,7 +39,7 @@ rc=$?
 
 server=${server%.}.
 
-typelist=$(nsupdate -T | awk '! /EID|NIMLOC|ATMA|RRSIG|UINFO|UID|GID/')
+typelist=$(nsupdate -T | awk '! /EID|NIMLOC|ATMA|RRSIG|DNSKEY|UINFO|UID|GID/')
 
 if [ -n "$master" ]
 then
